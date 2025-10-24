@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dự đoán LUCKY WIN | AI-V4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <link rel="icon" href="robot_icon.gif" type="image/png" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+
+    <script>
+        // Anti-DevTools Script (Giữ nguyên)
+        (function() {
+            const devtools = { isOpen: false, orientation: undefined };
+            const threshold = 160;
+            const emitEvent = (isOpen, orientation) => {
+                window.dispatchEvent(new CustomEvent('devtoolschange', { detail: { isOpen, orientation } }));
+            };
+            const main = ({emitEvents = true} = {}) => {
+                const now = Date.now();
+                debugger;
+                const diff = Date.now() - now;
+                if (diff > threshold) {
+                    if (!devtools.isOpen) { emitEvent(true); }
+                    devtools.isOpen = true;
+                } else {
+                    if (devtools.isOpen) { emitEvent(false); }
+                    devtools.isOpen = false;
+                }
+            };
+            main({emitEvents: false});
+            setInterval(main, 500);
+            window.addEventListener('devtoolschange', event => {
+                if (event.detail.isOpen) {
+                    document.body.innerHTML = `<div style="background-color: #000; color: red; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 24px; font-family: sans-serif;">PHÁT HIỆN HÀNH VI CỐ TÌNH CAN THIỆP HỆ THỐNG!</div>`;
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                }
+            });
+            window.addEventListener('contextmenu', e => e.preventDefault(), false);
+            window.addEventListener('keydown', e => {
+                if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
+                    e.preventDefault();
+                }
+            });
+        })();
+    </script>
+
+    <style>
+        /* === Biến màu & Reset CSS === */
+        :root {
+            /* Biến cho Tool dự đoán */
+            --bg-color: #0d1117;
+            --primary-gold: #ffd700;
+            --text-light: #e6edf3;
+            --text-secondary: #a0a0a0;
+            --card-bg: rgba(28, 35, 43, 0.9);
+            --border-color: rgba(255, 215, 0, 0.5);
+            --highlight-blue: #4dccff;
+            --exit-btn-bg: linear-gradient(135deg, #ff416c, #ff4b2b);
+
+            /* Biến cho màn hình Login */
+            --primary-red: #ff003c;
+            --secondary-orange: #ff4d00;
+            --dark-bg-login: #0d0d1a;
+            --glow-color: rgba(255, 0, 60, 0.75);
+            --grid-color: rgba(255, 0, 60, 0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        .hidden { display: none !important; }
+
+        /* === Body & Màn hình Login === */
+        body {
+            background-color: var(--dark-bg-login);
+            color: #e0e0e0;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: moveGrid 10s linear infinite;
+        }
+        
+        body.game-active {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-light);
+            overflow: hidden;
+            animation: none;
+        }
+
+        .login-container {
+            position: relative; z-index: 2; padding: 20px; width: 100%;
+        }
+
+        .entry-form {
+            background: rgba(13, 13, 26, 0.85);
+            border: 2px solid var(--primary-red);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 10px; padding: 30px; width: 90%; max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 0 15px var(--glow-color), 0 0 30px var(--glow-color), inset 0 0 10px var(--primary-red);
+            animation: pulseGlow 4s infinite alternate;
+        }
+
+        .title {
+            font-size: clamp(28px, 6vw, 36px); color: #fff; text-transform: uppercase;
+            letter-spacing: 3px; text-align: center;
+            text-shadow: 0 0 5px #fff, 0 0 10px var(--primary-red);
+            animation: glitch 5s linear infinite; margin-bottom: 30px;
+        }
+
+        .input-group { margin-bottom: 25px; }
+        .input-group input {
+            padding: 12px 15px; width: 100%; border: 1px solid var(--secondary-orange);
+            border-radius: 5px; background-color: rgba(0, 0, 0, 0.5); color: #e0e0e0;
+            font-family: 'Orbitron', sans-serif; font-size: 16px; outline: none; transition: all 0.3s ease;
+        }
+        .input-group input:focus { border-color: var(--primary-red); box-shadow: 0 0 10px var(--glow-color); }
+        .input-group input::placeholder { color: #888; font-style: italic; }
+
+        .submit-button {
+            display: block; padding: 12px 20px; background-color: var(--primary-red);
+            border: 1px solid var(--primary-red); border-radius: 5px; color: #ffffff;
+            font-weight: 500; font-size: 18px; font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;
+            width: 100%; letter-spacing: 2px; text-shadow: 0 0 5px #000;
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+        .submit-button:hover {
+            background-color: var(--secondary-orange); border-color: var(--secondary-orange);
+            box-shadow: 0 0 20px rgba(255, 77, 0, 0.8);
+        }
+
+        /* === Giao diện Tool & Game (Đã sửa) === */
+        iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1; }
+        
+        #robotBox {
+            position: fixed; top: 80px; left: 20px; z-index: 9999; user-select: none;
+            display: flex; align-items: flex-start; gap: 12px; cursor: move;
+            touch-action: none; animation: float 3s ease-in-out infinite;
+        }
+        #robotIcon {
+            width: 70px; height: auto; object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+        }
+        
+        #predictionCard {
+            /* THU GỌN HƠN */
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); color: var(--text-light);
+            padding: 10px 12px; /* Giảm padding */
+            border-radius: 12px; /* Giảm border radius */
+            max-width: 250px; /* Giảm max-width */
+            border: 2px solid var(--border-color); box-shadow: 0 0 10px var(--primary-gold);
+            font-size: 13px; text-align: left;
+        }
+        #phien { 
+            /* Phiên dự đoán (Kế tiếp) - Nổi bật */
+            font-size: 13px; font-weight: 700; color: #fff; 
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.7); 
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        #duDoan { 
+            /* Kết quả Dự đoán (Tài/Xỉu) - Lớn nhất */
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px; font-weight: 700; 
+            margin-bottom: 5px;
+            /* Thêm độ đậm để nổi bật tỷ lệ */
+        }
+        #cauStatus { 
+            /* Kết quả Phiên cũ (Mới nhất) - Nhỏ và chi tiết */
+            margin-top: 5px; font-size: 11px; color: var(--text-secondary); 
+            border-top: 1px dashed rgba(255, 255, 255, 0.1); padding-top: 5px;
+        }
+        .confidence-percent {
+            font-size: 16px; /* Kích thước font cho % */
+            font-weight: 400; /* Giảm độ đậm cho % */
+            color: var(--text-light);
+            margin-left: 5px;
+        }
+        #copyright {
+            position: fixed; bottom: 10px; right: 10px; color: var(--text-secondary); font-size: 11px;
+            background: rgba(13, 17, 23, 0.6); padding: 4px 8px; border-radius: 5px;
+            z-index: 9999; user-select: none; opacity: 0.7;
+        }
+        .back-btn {
+            display: flex; align-items: center; gap: 8px; position: fixed; top: 15px; left: 15px;
+            padding: 8px 15px;
+            background: var(--exit-btn-bg); color: white; font-weight: 600;
+            font-size: 14px;
+            text-decoration: none; border: none; border-radius: 50px;
+            cursor: pointer; z-index: 10000; box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4);
+            transition: all 0.3s ease; user-select: none;
+        }
+        .back-btn:hover {
+            transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(255, 75, 43, 0.6);
+        }
+        /* Màu cho Tài và Xỉu (giữ nguyên) */
+        .du-doan-tai { color: #ff5757 !important; text-shadow: 0 0 5px rgba(255, 87, 87, 0.8); }
+        .du-doan-xiu { color: #4dccff !important; text-shadow: 0 0 5px rgba(77, 204, 255, 0.8); }
+
+        /* Keyframes (giữ nguyên) */
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+        @keyframes moveGrid { from { background-position: 0 0; } to { background-position: -80px -80px; } }
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color), inset 0 0 5px var(--primary-red); }
+            to { box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color), inset 0 0 10px var(--primary-red); }
+        }
+        @keyframes glitch { 2%, 64% { transform: translate(2px, 0) skew(0deg); } 4%, 60% { transform: translate(-2px, 0) skew(0deg); } 62% { transform: translate(0, 0) skew(5deg); } }
+    </style>
+</head>
+<body>
+
+<script>
+    // --- CƠ CHẾ XÁC THỰC (Giữ nguyên) ---
+    (function() {
+        const userJson = sessionStorage.getItem('currentUser');
+        let user = userJson ? JSON.parse(userJson) : null;
+
+        if (!user || !user.activeKey) {
+            document.body.style.display = 'none';
+            Swal.fire({
+                background: '#0a0a0f', color: '#00ffea', title: 'ACCESS DENIED',
+                text: 'Authentication required. Redirecting to login...', icon: 'error',
+                iconColor: '#ff00ff', confirmButtonText: 'OK', confirmButtonColor: '#ff00ff',
+                timer: 2500, allowOutsideClick: false, showConfirmButton: false, timerProgressBar: true,
+                customClass: { timerProgressBar: 'swal-progress-bar-hacker' }
+            }).then(() => { window.location.href = 'index.html'; });
+            const style = document.createElement('style');
+            style.innerHTML = `.swal-progress-bar-hacker { background-color: #ff00ff !important; }`;
+            document.head.appendChild(style);
+            throw new Error("Authentication failed. Halting script execution.");
+        }
+    })();
+</script>
+
+<div class="login-container" id="login-screen">
+    <div class="entry-form">
+        <h1 class="title">NHẬP LINK GAME LUCKY WIN</h1>
+        <form id="entry-form">
+            <div class="input-group">
+                <input type="url" id="linkInput" placeholder="Nhập link game..." required/>
+            </div>
+            <button type="submit" class="submit-button">
+                <span>Vào game 🎮</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div id="game-screen" class="hidden">
+    <a href="menugame.html" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+        </svg>
+        Quay lại Menu
+    </a>
+
+    <iframe id="gameIframe" src="" allowfullscreen></iframe>
+
+    <div id="robotBox" title="Kéo thả khung dự đoán">
+        <img id="robotIcon" src="https://i.postimg.cc/1zLnNsCZ/IMG-3575.gif" alt="Robot" />
+        <div id="predictionCard">
+            <div id="phien">Đang chờ phiên mới...</div>
+            <div id="duDoan">...</div>
+            <div id="cauStatus">Đang khởi động hệ thống AI-V4...</div>
+        </div>
+    </div>
+
+    <audio id="soundTai" src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3" preload="auto"></audio>
+    <audio id="soundXiu" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
+
+    <div id="copyright">Powered by AI-V4</div>
+</div>
+
+<script>
+    const LUCK_API = "luck.php";
+    let lastUpdatedPhien = null; // Lưu phiên cuối cùng đã xử lý thành công
+    let historyResults = []; // **Mảng lưu trữ lịch sử kết quả (Tài/Xỉu)**
+    
+    // =================================================================================
+    // 7 THUẬT TOÁN CỐT LÕI TỐI ƯU HÓA (Mục tiêu 86% ACCURACY)
+    // =================================================================================
+
+    // I. NHÓM TỐC ĐỘ & ĐÀ (SPEED & MOMENTUM) - BẮT CẦU NGẮN
+
+    /**
+     * Thuật toán 1: Weighted Recent - Trọng số CỰC CAO cho 5 phiên gần nhất.
+     * @param {Array<string>} results - Lịch sử kết quả ('Tài'/'Xỉu').
+     * @returns {string} Dự đoán.
+     */
+    function algo1_weightedRecent(results) {
+        if (!results || results.length === 0) return "Tài";
+        let t = 0, x = 0;
+        const maxLen = Math.min(results.length, 5); 
+        for (let i = 0; i < maxLen; i++) {
+            // Lấy từ cuối ngược về (results.at(-1-i))
+            const w = (i + 1) * 6; // Trọng số CỰC CAO, tăng dần cho phiên mới nhất
+            if (results.at(-1 - i) === "Tài") t += w; else x += w;
+        }
+        return t >= x ? "Tài" : "Xỉu";
+    }
+
+    /**
+     * Thuật toán 2: Long-Chain Reverse - Phá dây Bệt Cực Ngắn (Reversal after k streak).
+     * @param {Array<string>} results - Lịch sử kết quả ('Tài'/'Xỉu').
+     * @param {number} k - Độ dài chuỗi tối thiểu để bẻ.
+     * @returns {string} Dự đoán.
+     */
+    function algo2_longChainReverse(results, k = 3) {
+        if (!results || results.length < k) return results.at(-1) || "Tài";
+        const last = results.at(-1);
+        let chain = 1;
+        for (let i = results.length - 2; i >= 0; i--) {
+            if (results[i] === last) chain++; else break;
+        }
+        // Nếu bệt 3 lần (hoặc hơn) -> Bẻ cầu
+        return chain >= k ? (last === "Tài" ? "Xỉu" : "Tài") : last;
+    }
+
+    /**
+     * Thuật toán 3: Alternation Detector - Bắt/Bẻ cầu xen kẽ 1-1-1. (Sử dụng logic của bạn)
+     * @param {Array<string>} results - Lịch sử kết quả ('Tài'/'Xỉu').
+     * @returns {string} Dự đoán.
+     */
+    function algo3_alternation(results) {
+        if (!results || results.length < 4) return results.at(-1) || "Tài";
+        const last4 = results.slice(-4);
+        let alt = 0;
+        for (let i = 0; i < 3; i++) if (last4[i] !== last4[i+1]) alt++;
+        // Nếu 3/3 lần xen kẽ -> Dự đoán ngược
+        return alt === 3 ? (results.at(-1) === "Tài" ? "Xỉu" : "Tài") : results.at(-1); 
+    }
+
+    /**
+     * Thuật toán 4: Short-Window Majority - Đa số 4 phiên gần nhất (Bắt đà ngắn).
+     * (Thêm thuật toán này để đủ nhóm Momentum)
+     * @param {Array<string>} results - Lịch sử kết quả ('Tài'/'Xỉu').
+     * @param {number} window - Kích thước cửa sổ.
+     * @returns {string} Dự đoán.
+     */
+    function algo4_windowMajority(results, window = 4) {
+        const win = (results || []).slice(-window);
+        if (!win.length) return "Tài";
+        const t = win.filter(v => v === "Tài").length;
+        return t >= Math.ceil(win.length / 2) ? "Tài" : "Xỉu";
+    }
+
+    // II. NHÓM ỨC CHẾ SAI LỆCH VÀ CÂN BẰNG CẦU (STABILITY & REVERSAL)
+
+    /**
+     * Thuật toán 5: Anti-Entropy (Long-Term) - Chống Độ Lệch Dài Hạn (100 phiên).
+     * @param {Array<string>} results - Lịch sử kết quả ('Tài'/'Xỉu').
+     * @param {number} longTerm - Độ dài lịch sử để xét.
+     * @param {number} deviation - Ngưỡng lệch (e.g., 0.56 = 56%).
+     * @returns {string} Dự đoán.
+     */
+    function algo5_antiEntropy(results, longTerm = 100, deviation = 0.56) {
+        if (!results || results.length < longTerm) return results.at(-1) || "Tài";
+        const recent = results.slice(-longTerm);
+        const tCount = recent.filter(r => r === "Tài").length;
+        
+        // Nếu Tài quá 56% -> Bẻ Xỉu
+        if (tCount / longTerm >= deviation) return "Xỉu"; 
+        // Nếu Xỉu quá 56% -> Bẻ Tài
+        if ((longTerm - tCount) / longTerm >= deviation) return "Tài"; 
+        
+        return results.at(-1); // Giữ nguyên kết quả cuối
+    }
+
+    /**
+     * Thuật toán 6: Adaptive Parity Index - Kết hợp Parity Index và Alternation.
+     * (Thêm thuật toán này để đủ nhóm Stability)
+     * @param {Array<string>} history - Lịch sử kết quả ('Tài'/'Xỉu').
+     * @returns {string} Dự đoán.
+     */
+    function algo6_parityIndex(history) {
+        if (!history || history.length < 5) return history.at(-1) || "Tài";
+        let score = 0;
+        // Chỉ xét 5 phiên gần nhất
+        for (let i = history.length - 5; i < history.length; i++) {
+            if ((i % 2 === 0 && history[i] === "Tài") || (i % 2 === 1 && history[i] === "Xỉu")) score++;
+            else score--;
+        }
+        const nextEven = (history.length % 2 === 0);
+        // Nếu điểm cao (theo T-X-T-X) -> Tiếp tục mô hình T-X
+        if (score >= 2) return nextEven ? "Tài" : "Xỉu";
+        // Nếu điểm thấp -> Theo kết quả cuối (hoặc đảo)
+        return history.at(-1) === "Tài" ? "Xỉu" : "Tài";
+    }
+
+    /**
+     * Thuật toán 7: Trend Reversal (Medium-Term) - Bẻ cầu khi có bệt trung bình (7 phiên).
+     * (Thêm thuật toán này để đủ nhóm Reversal)
+     * @param {Array<string>} results - Lịch sử kết quả ('Tài'/'Xỉu').
+     * @param {number} k - Độ dài chuỗi trung bình để bẻ.
+     * @returns {string} Dự đoán.
+     */
+    function algo7_mediumChainReverse(results, k = 7) {
+        if (!results || results.length < k) return results.at(-1) || "Tài";
+        const last = results.at(-1);
+        let chain = 1;
+        for (let i = results.length - 2; i >= 0; i--) {
+            if (results[i] === last) chain++; else break;
+        }
+        // Nếu bệt trung bình 7 lần (hoặc hơn) -> Bẻ cầu
+        return chain >= k ? (last === "Tài" ? "Xỉu" : "Tài") : last;
+    }
+
+
+    // =================== Hybrid vote (7 thuật toán) ===================
+    function hybrid7(history, weights) {
+        // Đã đổi tên từ hybrid15 thành hybrid7
+        const algos = [
+            algo1_weightedRecent, // Tốc độ
+            algo2_longChainReverse, // Bẻ ngắn
+            algo3_alternation, // Bắt/Bẻ 1-1
+            algo4_windowMajority, // Đa số ngắn
+            algo5_antiEntropy, // Chống lệch dài hạn
+            algo6_parityIndex, // Parity/Alternation
+            algo7_mediumChainReverse // Bẻ trung bình
+        ];
+        
+        // Trọng số mặc định (bằng nhau)
+        if (!weights || weights.length !== algos.length) weights = Array(algos.length).fill(1);
+
+        let scoreT = 0, scoreX = 0;
+        
+        for (let i = 0; i < algos.length; i++) {
+            let v;
+            try {
+                // Tận dụng việc bạn đã định nghĩa các hàm có tham số mặc định
+                v = algos[i](history); 
+            } catch (e) {
+                v = history.at(-1) || "Tài";
+            }
+            if (v === "Tài") scoreT += weights[i]; else scoreX += weights[i];
+        }
+        
+        const totalScore = scoreT + scoreX;
+        if (totalScore === 0) return { prediction: history.at(-1) || "Tài", confidence: 50 };
+
+        const prediction = scoreT >= scoreX ? "Tài" : "Xỉu";
+        let confidence = Math.round((Math.max(scoreT, scoreX) / totalScore) * 100);
+        
+        // Điều chỉnh và giới hạn confidence
+        confidence = Math.max(1, Math.min(100, confidence));
+        
+        return { prediction, confidence, scoreT, scoreX };
+    }
+
+    // =================================================================
+
+    function runTool() {
+        fetchData();
+        setInterval(fetchData, 5000); // Lặp lại mỗi 5s
+
+        // Logic kéo thả (giữ nguyên)
+        const box = document.getElementById("robotBox");
+        let isDragging = false, offsetX = 0, offsetY = 0;
+        const startDrag = (e) => {
+            isDragging = true;
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            offsetX = clientX - box.offsetLeft;
+            offsetY = clientY - box.offsetTop;
+        };
+        const drag = (e) => {
+            if (isDragging) {
+                e.preventDefault();
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                
+                let newLeft = clientX - offsetX;
+                let newTop = clientY - offsetY;
+
+                // Giới hạn kéo trong viewport
+                const maxX = window.innerWidth - box.offsetWidth - 10;
+                const maxY = window.innerHeight - box.offsetHeight - 10;
+                
+                newLeft = Math.max(10, Math.min(newLeft, maxX));
+                newTop = Math.max(10, Math.min(newTop, maxY));
+                
+                box.style.left = newLeft + "px";
+                box.style.top = newTop + "px";
+            }
+        };
+        const endDrag = () => { isDragging = false; };
+        box.addEventListener("mousedown", startDrag);
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("mouseup", endDrag);
+        box.addEventListener("touchstart", startDrag, { passive: false });
+        document.addEventListener("touchmove", drag, { passive: false });
+        document.addEventListener("touchend", endDrag);
+    }
+
+    async function fetchData() {
+        try {
+            const apiUrl = LUCK_API + '?t=' + Date.now(); 
+            const res = await fetch(apiUrl);
+            
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: "Lỗi không xác định." }));
+                throw new Error(errorData.error || `Lỗi HTTP: ${res.status}`);
+            }
+            
+            const data = await res.json();
+            
+            // --- LẤY DỮ LIỆU TỪ API ---
+            const currentPhien = data?.phien; 
+            const previousResult = data?.ket_qua; // 'Tài' hoặc 'Xỉu' của phiên hiện tại (đã ra)
+            const xuc_xac_1 = data?.xuc_xac_1;
+            const xuc_xac_2 = data?.xuc_xac_2;
+            const xuc_xac_3 = data?.xuc_xac_3;
+            const sumDice = (xuc_xac_1 && xuc_xac_2 && xuc_xac_3) ? xuc_xac_1 + xuc_xac_2 + xuc_xac_3 : null;
+
+            if (!currentPhien) {
+                throw new Error("API không trả về mã phiên.");
+            }
+
+            // --- CẬP NHẬT LỊCH SỬ KẾT QUẢ VÀ DỰ ĐOÁN CHỈ KHI CÓ PHIÊN MỚI ---
+            if (currentPhien !== lastUpdatedPhien) {
+                if (previousResult && (previousResult === 'Tài' || previousResult === 'Xỉu')) {
+                    // Thêm kết quả mới nhất vào lịch sử
+                    historyResults.push(previousResult);
+                }
+
+                lastUpdatedPhien = currentPhien;
+                
+                // --- GỌI HÀM DỰ ĐOÁN MỚI VỚI LỊCH SỬ (HYBRID) ---
+                const nextPhien = parseInt(currentPhien) + 1;
+
+                // Chuẩn bị trạng thái hiển thị
+                const previousStatus = (previousResult && sumDice) 
+                    ? `KQ Phiên #${currentPhien}: ${sumDice} (${previousResult})`
+                    : `KQ Phiên #${currentPhien}: Đang chờ...`;
+                
+                // 1. Hiển thị thông tin phiên đang chờ dự đoán và trạng thái phân tích
+                document.getElementById("phien").innerText = `PHIÊN DỰ ĐOÁN: #${nextPhien}`;
+                const duDoanEl = document.getElementById("duDoan");
+                duDoanEl.innerHTML = 'Analyzing...';
+                duDoanEl.classList.remove("du-doan-tai", "du-doan-xiu");
+                document.getElementById("cauStatus").innerText = previousStatus; // Hiển thị kết quả phiên cũ (đã ra)
+
+                // 2. Tạo hiệu ứng trễ 3 giây trước khi hiện KẾT QUẢ DỰ ĐOÁN
+                setTimeout(() => {
+                    const predictionObj = hybrid7(historyResults, null); // **Sử dụng hybrid7 mới**
+                    updateDuDoanUI(predictionObj.prediction, predictionObj.confidence, previousStatus);
+                }, 3000);
+            } else {
+                // Đang trong phiên, giữ nguyên trạng thái
+                if (!document.getElementById("phien").innerText.includes("#")) {
+                    document.getElementById("phien").innerText = `PHIÊN DỰ ĐOÁN: #${parseInt(currentPhien) + 1}`;
+                }
+                if (document.getElementById("cauStatus").innerText.includes("khởi động") || document.getElementById("cauStatus").innerText.includes("chờ kết quả")) {
+                    document.getElementById("cauStatus").innerText = `Phiên #${currentPhien} đang chờ kết quả...`;
+                }
+            }
+
+        } catch (err) {
+            console.error("Lỗi khi fetch dữ liệu:", err.message);
+            document.getElementById("phien").innerText = `LỖI API`;
+            document.getElementById("duDoan").innerText = `ERROR!`;
+            document.getElementById("cauStatus").innerText = `Lỗi: ${err.message}. Retrying...`;
+        }
+    }
+
+    function updateDuDoanUI(prediction, confidence, status) {
+        const duDoanEl = document.getElementById("duDoan");
+        
+        // Hiển thị kết quả dự đoán kèm tỷ lệ
+        duDoanEl.innerHTML = `${prediction || 'N/A'} <span class="confidence-percent">(${confidence}%)</span>`;
+        
+        // Cập nhật màu sắc và âm thanh
+        duDoanEl.classList.remove("du-doan-tai", "du-doan-xiu");
+        if (prediction && prediction.includes("Tài")) {
+            duDoanEl.classList.add("du-doan-tai");
+            document.getElementById("soundTai").play().catch(() => {});
+        } else if (prediction && prediction.includes("Xỉu")) {
+            duDoanEl.classList.add("du-doan-xiu");
+            document.getElementById("soundXiu").play().catch(() => {});
+        }
+    }
+
+    // --- Logic chuyển đổi giao diện (Giữ nguyên) ---
+    document.getElementById('entry-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const gameLink = document.getElementById('linkInput').value;
+        if (!gameLink.trim()) {
+            Swal.fire({
+                background: '#0a0a0f', color: '#ff00ff', title: 'WARNING!',
+                text: 'Vui lòng nhập link game để khởi chạy hệ thống.', icon: 'warning',
+                iconColor: '#ff00ff', confirmButtonText: 'OK', confirmButtonColor: '#ff00ff'
+            });
+            return;
+        }
+
+        document.getElementById('gameIframe').src = gameLink;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.body.classList.add('game-active');
+        document.getElementById('game-screen').classList.remove('hidden');
+
+        // Khởi chạy tool dự đoán
+        runTool();
+    });
+</script>
+
+</body>
+</html>
